@@ -143,6 +143,15 @@ import Cordova
     }
 
     /**
+     Allow Custom WKWebViewConfiguration for the webview.
+
+     - Parameter WKWebViewConfiguration configuration: the configuration that will be changed by the games plugin.
+     */
+    open func setCustomWebViewConfiguration(for configuration: WKWebViewConfiguration){
+        print("Set Custom Configuration For The Webview")
+    }
+
+    /**
      Allows any additional configuration to be performed. The `webView` and `bridge` properties will be set by this point.
 
      - Note: This is called before the webview has been added to the view hierarchy. Not all operations may be possible at
@@ -283,6 +292,7 @@ extension CAPBridgeViewController {
         let webConfig = webViewConfiguration(for: configuration)
         webConfig.setURLSchemeHandler(assetHandler, forURLScheme: configuration.localURL.scheme ?? InstanceDescriptorDefaults.scheme)
         webConfig.userContentController = delegationHandler.contentController
+        self.setCustomWebViewConfiguration(for: webConfig)
         // create the web view and set its properties
         let aWebView = webView(with: .zero, configuration: webConfig)
         aWebView.scrollView.bounces = false
