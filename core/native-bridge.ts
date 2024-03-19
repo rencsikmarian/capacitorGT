@@ -98,13 +98,9 @@ const convertBody = async (
     };
   } else if (body instanceof FormData) {
     const formData = await convertFormData(body);
-    const boundary = `${Date.now()}`;
     return {
       data: formData,
       type: 'formData',
-      headers: {
-        'Content-Type': `multipart/form-data; boundary=--${boundary}`,
-      },
     };
   } else if (body instanceof File) {
     const fileData = await readFileAsBase64(body);
@@ -116,6 +112,34 @@ const convertBody = async (
   }
 
   return { data: body, type: 'json' };
+};
+
+const CAPACITOR_HTTP_INTERCEPTOR = '/_capacitor_http_interceptor_';
+const CAPACITOR_HTTPS_INTERCEPTOR = '/_capacitor_https_interceptor_';
+
+// TODO: export as Cap function
+const isRelativeOrProxyUrl = (url: string | undefined): boolean =>
+  !url ||
+  !(url.startsWith('http:') || url.startsWith('https:')) ||
+  url.indexOf(CAPACITOR_HTTP_INTERCEPTOR) > -1 ||
+  url.indexOf(CAPACITOR_HTTPS_INTERCEPTOR) > -1;
+
+// TODO: export as Cap function
+const createProxyUrl = (url: string, win: WindowCapacitor): string => {
+  if (isRelativeOrProxyUrl(url)) return url;
+
+  const proxyUrl = new URL(url);
+  const bridgeUrl = new URL(win.Capacitor?.getServerUrl() ?? '');
+  const isHttps = proxyUrl.protocol === 'https:';
+  const originalHost = encodeURIComponent(proxyUrl.host);
+  const originalPathname = proxyUrl.pathname;
+  proxyUrl.protocol = bridgeUrl.protocol;
+  proxyUrl.hostname = bridgeUrl.hostname;
+  proxyUrl.port = bridgeUrl.port;
+  proxyUrl.pathname = `${
+    isHttps ? CAPACITOR_HTTPS_INTERCEPTOR : CAPACITOR_HTTP_INTERCEPTOR
+  }/${originalHost}${originalPathname}`;
+  return proxyUrl.toString();
 };
 
 const initBridge = (w: any): void => {
@@ -523,6 +547,27 @@ const initBridge = (w: any): void => {
             return win.CapacitorWebFetch(resource, options);
           }
 
+          if (
+            !options?.method ||
+            options.method.toLocaleUpperCase() === 'GET' ||
+            options.method.toLocaleUpperCase() === 'HEAD' ||
+            options.method.toLocaleUpperCase() === 'OPTIONS' ||
+            options.method.toLocaleUpperCase() === 'TRACE'
+          ) {
+            if (typeof resource === 'string') {
+              return await win.CapacitorWebFetch(
+                createProxyUrl(resource, win),
+                options,
+              );
+            } else if (resource instanceof Request) {
+              const modifiedRequest = new Request(
+                createProxyUrl(resource.url, win),
+                resource,
+              );
+              return await win.CapacitorWebFetch(modifiedRequest, options);
+            }
+          }
+
           const tag = `CapacitorHttp fetch ${Date.now()} ${resource}`;
           console.time(tag);
 
@@ -621,15 +666,13 @@ const initBridge = (w: any): void => {
           xhr.readyState = 0;
           const prototype = win.CapacitorWebXMLHttpRequest.prototype;
 
-          const isRelativeURL = (url: string | undefined) =>
-            !url || !(url.startsWith('http:') || url.startsWith('https:'));
           const isProgressEventAvailable = () =>
             typeof ProgressEvent !== 'undefined' &&
             ProgressEvent.prototype instanceof Event;
 
           // XHR patch abort
           prototype.abort = function () {
-            if (isRelativeURL(this._url)) {
+            if (isRelativeOrProxyUrl(this._url)) {
               return win.CapacitorWebXMLHttpRequest.abort.call(this);
             }
             this.readyState = 0;
@@ -641,14 +684,30 @@ const initBridge = (w: any): void => {
 
           // XHR patch open
           prototype.open = function (method: string, url: string) {
+            this._method = method.toLocaleUpperCase();
             this._url = url;
-            this._method = method;
 
-            if (isRelativeURL(url)) {
+            if (
+              !this._method ||
+              this._method === 'GET' ||
+              this._method === 'HEAD' ||
+              this._method === 'OPTIONS' ||
+              this._method === 'TRACE'
+            ) {
+              if (isRelativeOrProxyUrl(url)) {
+                return win.CapacitorWebXMLHttpRequest.open.call(
+                  this,
+                  method,
+                  url,
+                );
+              }
+
+              this._url = createProxyUrl(this._url, win);
+
               return win.CapacitorWebXMLHttpRequest.open.call(
                 this,
                 method,
-                url,
+                this._url,
               );
             }
 
@@ -663,7 +722,7 @@ const initBridge = (w: any): void => {
             header: string,
             value: string,
           ) {
-            if (isRelativeURL(this._url)) {
+            if (isRelativeOrProxyUrl(this._url)) {
               return win.CapacitorWebXMLHttpRequest.setRequestHeader.call(
                 this,
                 header,
@@ -675,7 +734,7 @@ const initBridge = (w: any): void => {
 
           // XHR patch send
           prototype.send = function (body?: Document | XMLHttpRequestBodyInit) {
-            if (isRelativeURL(this._url)) {
+            if (isRelativeOrProxyUrl(this._url)) {
               return win.CapacitorWebXMLHttpRequest.send.call(this, body);
             }
 
@@ -750,9 +809,10 @@ const initBridge = (w: any): void => {
                       } else {
                         this.response = nativeResponse.data;
                       }
-                      this.responseText = nativeResponse.headers[
-                        'Content-Type'
-                      ]?.startsWith('application/json')
+                      this.responseText = (
+                        nativeResponse.headers['Content-Type'] ||
+                        nativeResponse.headers['content-type']
+                      )?.startsWith('application/json')
                         ? JSON.stringify(nativeResponse.data)
                         : nativeResponse.data;
                       this.responseURL = nativeResponse.url;
@@ -813,7 +873,7 @@ const initBridge = (w: any): void => {
 
           // XHR patch getAllResponseHeaders
           prototype.getAllResponseHeaders = function () {
-            if (isRelativeURL(this._url)) {
+            if (isRelativeOrProxyUrl(this._url)) {
               return win.CapacitorWebXMLHttpRequest.getAllResponseHeaders.call(
                 this,
               );
@@ -830,7 +890,7 @@ const initBridge = (w: any): void => {
 
           // XHR patch getResponseHeader
           prototype.getResponseHeader = function (name: string) {
-            if (isRelativeURL(this._url)) {
+            if (isRelativeOrProxyUrl(this._url)) {
               return win.CapacitorWebXMLHttpRequest.getResponseHeader.call(
                 this,
                 name,
