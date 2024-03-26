@@ -134,21 +134,20 @@ import Cordova
     }
 
     /**
+    Allows the NAI_Plugin to customize the WKWebViewConfiguration
+    - Parameter configuration: the configuration for WKWebView.
+    */
+    open func nai_plugin_add_custom_configuration_webview(configuration config: WKWebViewConfiguration){
+        print("CAPBridgeViewController Config")
+    }
+
+    /**
      Returns a WKWebView initialized with the frame and configuration.
 
      Subclasses can override this method to return a subclass of WKWebView if needed.
      */
     open func webView(with frame: CGRect, configuration: WKWebViewConfiguration) -> WKWebView {
         return WKWebView(frame: frame, configuration: configuration)
-    }
-
-    /**
-     Allow Custom WKWebViewConfiguration for the webview.
-
-     - Parameter WKWebViewConfiguration configuration: the configuration that will be changed by the games plugin.
-     */
-    open func setCustomWebViewConfiguration(for configuration: WKWebViewConfiguration){
-        print("Set Custom Configuration For The Webview")
     }
 
     /**
@@ -292,7 +291,7 @@ extension CAPBridgeViewController {
         let webConfig = webViewConfiguration(for: configuration)
         webConfig.setURLSchemeHandler(assetHandler, forURLScheme: configuration.localURL.scheme ?? InstanceDescriptorDefaults.scheme)
         webConfig.userContentController = delegationHandler.contentController
-        self.setCustomWebViewConfiguration(for: webConfig)
+        self.nai_plugin_add_custom_configuration_webview(configuration: webConfig)
         // create the web view and set its properties
         let aWebView = webView(with: .zero, configuration: webConfig)
         aWebView.scrollView.bounces = false
