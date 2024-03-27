@@ -137,7 +137,7 @@ import Cordova
     Allows the NAI_Plugin to customize the WKWebViewConfiguration
     - Parameter configuration: the configuration for WKWebView.
     */
-    open func nai_plugin_add_custom_configuration_webview(configuration config: WKWebViewConfiguration){
+    open func NAIPluginSetCustomWebviewConfiguration(configuration config: WKWebViewConfiguration){
         print("CAPBridgeViewController Config")
     }
 
@@ -291,7 +291,7 @@ extension CAPBridgeViewController {
         let webConfig = webViewConfiguration(for: configuration)
         webConfig.setURLSchemeHandler(assetHandler, forURLScheme: configuration.localURL.scheme ?? InstanceDescriptorDefaults.scheme)
         webConfig.userContentController = delegationHandler.contentController
-        self.nai_plugin_add_custom_configuration_webview(configuration: webConfig)
+        self.NAIPluginSetCustomWebviewConfiguration(configuration: webConfig)
         // create the web view and set its properties
         let aWebView = webView(with: .zero, configuration: webConfig)
         aWebView.scrollView.bounces = false
