@@ -109,6 +109,12 @@ var nativeBridge = (function (exports) {
                 headers: { 'Content-Type': contentType || 'application/octet-stream' },
             };
         }
+        else if (body instanceof URLSearchParams) {
+            return {
+                data: body.toString(),
+                type: 'text',
+            };
+        }
         else if (body instanceof FormData) {
             const formData = await convertFormData(body);
             return {
@@ -492,11 +498,11 @@ var nativeBridge = (function (exports) {
                         if (request.url.startsWith(`${cap.getServerUrl()}/`)) {
                             return win.CapacitorWebFetch(resource, options);
                         }
-                        if (!(options === null || options === void 0 ? void 0 : options.method) ||
-                            options.method.toLocaleUpperCase() === 'GET' ||
-                            options.method.toLocaleUpperCase() === 'HEAD' ||
-                            options.method.toLocaleUpperCase() === 'OPTIONS' ||
-                            options.method.toLocaleUpperCase() === 'TRACE') {
+                        const { method } = request;
+                        if (method.toLocaleUpperCase() === 'GET' ||
+                            method.toLocaleUpperCase() === 'HEAD' ||
+                            method.toLocaleUpperCase() === 'OPTIONS' ||
+                            method.toLocaleUpperCase() === 'TRACE') {
                             if (typeof resource === 'string') {
                                 return await win.CapacitorWebFetch(createProxyUrl(resource, win), options);
                             }
@@ -508,7 +514,7 @@ var nativeBridge = (function (exports) {
                         const tag = `CapacitorHttp fetch ${Date.now()} ${resource}`;
                         console.time(tag);
                         try {
-                            const { body, method } = request;
+                            const { body } = request;
                             const optionHeaders = Object.fromEntries(request.headers.entries());
                             const { data: requestData, type, headers, } = await convertBody((options === null || options === void 0 ? void 0 : options.body) || body || undefined, optionHeaders['Content-Type'] || optionHeaders['content-type']);
                             const nativeResponse = await cap.nativePromise('CapacitorHttp', 'request', {

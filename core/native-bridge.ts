@@ -96,6 +96,11 @@ const convertBody = async (
       type,
       headers: { 'Content-Type': contentType || 'application/octet-stream' },
     };
+  } else if (body instanceof URLSearchParams) {
+    return {
+      data: body.toString(),
+      type: 'text',
+    };
   } else if (body instanceof FormData) {
     const formData = await convertFormData(body);
     return {
@@ -542,13 +547,12 @@ const initBridge = (w: any): void => {
           if (request.url.startsWith(`${cap.getServerUrl()}/`)) {
             return win.CapacitorWebFetch(resource, options);
           }
-
+          const { method } = request;
           if (
-            !options?.method ||
-            options.method.toLocaleUpperCase() === 'GET' ||
-            options.method.toLocaleUpperCase() === 'HEAD' ||
-            options.method.toLocaleUpperCase() === 'OPTIONS' ||
-            options.method.toLocaleUpperCase() === 'TRACE'
+            method.toLocaleUpperCase() === 'GET' ||
+            method.toLocaleUpperCase() === 'HEAD' ||
+            method.toLocaleUpperCase() === 'OPTIONS' ||
+            method.toLocaleUpperCase() === 'TRACE'
           ) {
             if (typeof resource === 'string') {
               return await win.CapacitorWebFetch(
@@ -568,7 +572,7 @@ const initBridge = (w: any): void => {
           console.time(tag);
 
           try {
-            const { body, method } = request;
+            const { body } = request;
             const optionHeaders = Object.fromEntries(request.headers.entries());
             const {
               data: requestData,
