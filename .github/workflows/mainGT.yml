@@ -31,4 +31,64 @@ jobs:
       run: cd ios && npm i && npm run xc:build:Capacitor && npm run xc:build:CapacitorCordova && npm run xc:build:xcframework && cd ..
     
     - name: Build the cli
-      run: cd cli && npm i && npm run build  # Use your project's build 
+      run: cd cli && npm i && npm run build  # Use your project's build
+
+    - name: Checkout target repository for core
+      uses: actions/checkout@v2
+      with:
+        repository: rencsikmarian/capacitorGT-core  # Replace with your target repository for core
+        token: ${{ secrets.GITHUB_TOKEN }}
+        path: capacitorGT-core
+
+    - name: Copy core build artifacts
+      run: |
+        cp -r core/build/* capacitorGT-core/
+
+    - name: Commit and push core build artifacts
+      run: |
+        cd capacitorGT-core
+        git config --global user.email "mariann4you@gmail.com"  # Set your email
+        git config --global user.name "rencsikmarian"  # Set your username
+        git add .
+        git commit -m "Upload core build artifacts"
+        git push
+
+    - name: Checkout target repository for ios
+      uses: actions/checkout@v2
+      with:
+        repository: rencsikmarian/capacitorGT-ios  # Replace with your target repository for ios
+        token: ${{ secrets.GITHUB_TOKEN }}
+        path: capacitorGT-ios
+
+    - name: Copy ios build artifacts
+      run: |
+        cp -r ios/build/* capacitorGT-ios/
+
+    - name: Commit and push ios build artifacts
+      run: |
+        cd capacitorGT-ios
+        git config --global user.email "mariann4you@gmail.com"  # Set your email
+        git config --global user.name "rencsikmarian"  # Set your username
+        git add .
+        git commit -m "Upload ios build artifacts"
+        git push
+
+    - name: Checkout target repository for cli
+      uses: actions/checkout@v2
+      with:
+        repository: rencsikmarian/capacitorGT-cli  # Replace with your target repository for cli
+        token: ${{ secrets.GITHUB_TOKEN }}
+        path: capacitorGT-cli
+
+    - name: Copy cli build artifacts
+      run: |
+        cp -r cli/build/* capacitorGT-cli/
+
+    - name: Commit and push cli build artifacts
+      run: |
+        cd capacitorGT-cli
+        git config --global user.email "mariann4you@gmail.com"  # Set your email
+        git config --global user.name "rencsikmarian"  # Set your username
+        git add .
+        git commit -m "Upload cli build artifacts"
+        git push
