@@ -27,9 +27,6 @@ jobs:
     - name: Build the capacitorGT-core
       run: cd core && npm i && npm run build && cd ..  # Use your project's build 
 
-    - name: Build the capacitorGT-ios
-      run: cd ios && npm i && npm run xc:build:Capacitor && npm run xc:build:CapacitorCordova && npm run xc:build:xcframework && cd ..
-    
     - name: Build the capacitorGT-cli
       run: cd cli && npm i && npm run build  # Use your project's build
 
