@@ -37,7 +37,7 @@ jobs:
       uses: actions/checkout@v2
       with:
         repository: rencsikmarian/capacitorGT-core  # Replace with your target repository for core
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.CAPACITORGT_TOKEN }}
         path: capacitorGT-core
 
     - name: Copy core build artifacts
@@ -57,7 +57,7 @@ jobs:
       uses: actions/checkout@v2
       with:
         repository: rencsikmarian/capacitorGT-ios  # Replace with your target repository for ios
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.CAPACITORGT_TOKEN }}
         path: capacitorGT-ios
 
     - name: Copy ios build artifacts
@@ -77,7 +77,7 @@ jobs:
       uses: actions/checkout@v2
       with:
         repository: rencsikmarian/capacitorGT-cli  # Replace with your target repository for cli
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.CAPACITORGT_TOKEN }}
         path: capacitorGT-cli
 
     - name: Copy cli build artifacts
