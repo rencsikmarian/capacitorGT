@@ -42,7 +42,16 @@ jobs:
 
     - name: Copy core build artifacts
       run: |
-        cp -r core/build/* capacitorGT-core/
+        mkdir -p capacitorGT-core/dist
+        mkdir -p capacitorGT-core/types
+        cp -r core/dist/* capacitorGT-core/dist/
+        cp -r core/types/* capacitorGT-core/types/
+        cp core/LICENSE capacitorGT-core/
+        cp core/README.md capacitorGT-core/
+        cp core/cookies.md capacitorGT-core/
+        cp core/cordova.js capacitorGT-core/
+        cp core/http.md capacitorGT-core/
+        cp core/package.json capacitorGT-core/
 
     - name: Commit and push core build artifacts
       run: |
@@ -62,7 +71,16 @@ jobs:
 
     - name: Copy ios build artifacts
       run: |
-        cp -r ios/build/* capacitorGT-ios/
+        mkdir -p capacitorGT-ios/Capacitor
+        mkdir -p capacitorGT-ios/CapacitorCordova
+        mkdir -p capacitorGT-ios/scripts
+        cp -r ios/Capacitor/* capacitorGT-ios/Capacitor/
+        cp -r ios/CapacitorCordova/* capacitorGT-ios/CapacitorCordova/
+        cp -r ios/scripts/* capacitorGT-ios/scripts/
+        cp ios/Capacitor.podspec capacitorGT-ios/
+        cp ios/CapacitorCordova.podspec capacitorGT-ios/
+        cp ios/LICENSE capacitorGT-ios/
+        cp ios/package.json capacitorGT-ios/
 
     - name: Commit and push ios build artifacts
       run: |
@@ -82,7 +100,15 @@ jobs:
 
     - name: Copy cli build artifacts
       run: |
-        cp -r cli/build/* capacitorGT-cli/
+        mkdir -p capacitorGT-cli/assets
+        mkdir -p capacitorGT-cli/bin
+        mkdir -p capacitorGT-cli/dist
+        cp -r cli/assets/* capacitorGT-cli/assets/
+        cp -r cli/bin/* capacitorGT-cli/bin/
+        cp -r cli/dist/* capacitorGT-cli/dist/
+        cp cli/LICENSE capacitorGT-cli/
+        cp cli/README.md capacitorGT-cli/
+        cp cli/package.json capacitorGT-cli/
 
     - name: Commit and push cli build artifacts
       run: |
