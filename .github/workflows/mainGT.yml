@@ -75,7 +75,7 @@ jobs:
         mkdir -p capacitorGT-ios/Capacitor/Capacitor
         mkdir -p capacitorGT-ios/CapacitorCordova/CapacitorCordova
         mkdir -p capacitorGT-ios/scripts
-        cp -r ios/Capacitor/Capacitor/Capacitor* capacitorGT-ios/Capacitor/Capacitor/
+        cp -r ios/Capacitor/Capacitor/* capacitorGT-ios/Capacitor/Capacitor/
         cp -r ios/CapacitorCordova/CapacitorCordova/* capacitorGT-ios/CapacitorCordova/CapacitorCordova/
         cp ios/scripts/pods_helpers.rb capacitorGT-ios/scripts/
         cp ios/Capacitor.podspec capacitorGT-ios/
