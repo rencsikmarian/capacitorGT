@@ -3,7 +3,7 @@ name: Build capacitorGT and Upload capacitorGT-core | capacitorGT-ios | capacito
 on:
   push:
     branches:
-      - main  # Change this to the branch you want to trigger the workflow on
+      - '6.x'  # Change this to the branch you want to trigger the workflow on
   workflow_dispatch:
 
 jobs:
