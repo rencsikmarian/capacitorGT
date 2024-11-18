@@ -1,0 +1,125 @@
+name: Build capacitorGT and Upload capacitorGT-core | capacitorGT-ios | capacitorGT-cli
+
+on:
+  push:
+    branches:
+      - main  # Change this to the branch you want to trigger the workflow on
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js (or your environment)
+      uses: actions/setup-node@v2
+      with:
+        node-version: 18.x  # Specify the Node.js version or your required environment
+
+    - name: Install dependencies
+      run: npm install  # Use your project's dependency management command
+
+    - name: Build the project
+      run: npm run build:nativebridge  # Use your project's build command
+
+    - name: Build the capacitorGT-core
+      run: cd core && npm i && npm run build && cd ..  # Use your project's build 
+
+    - name: Build the capacitorGT-cli
+      run: cd cli && npm i && npm run build  # Use your project's build
+
+    - name: Checkout target repository for capacitorGT-core
+      uses: actions/checkout@v2
+      with:
+        repository: rencsikmarian/capacitorGT-core  # Replace with your target repository for core
+        token: ${{ secrets.CAPACITORGT_TOKEN }}
+        path: capacitorGT-core
+
+    - name: Copy capacitorGT-core build artifacts
+      run: |
+        mkdir -p capacitorGT-core/dist
+        mkdir -p capacitorGT-core/types
+        cp -r core/dist/* capacitorGT-core/dist/
+        cp -r core/types/* capacitorGT-core/types/
+        cp core/LICENSE capacitorGT-core/
+        cp core/README.md capacitorGT-core/
+        cp core/cookies.md capacitorGT-core/
+        cp core/cordova.js capacitorGT-core/
+        cp core/http.md capacitorGT-core/
+        cp core/package.json capacitorGT-core/
+    - name: Commit and push capacitorGT-core build artifacts
+      run: |
+        cd capacitorGT-core
+        git config --global user.email "mariann4you@gmail.com"  # Set your email
+        git config --global user.name "rencsikmarian"  # Set your username
+        git add .
+        if [ -n "$(git status --porcelain)" ]; then
+          git commit -m "Upload capacitorGT-core build artifacts"
+          git push
+        else
+          echo "No changes to commit for capacitorGT-core"
+        fi
+    - name: Checkout target repository for capacitorGT-ios
+      uses: actions/checkout@v2
+      with:
+        repository: rencsikmarian/capacitorGT-ios  # Replace with your target repository for ios
+        token: ${{ secrets.CAPACITORGT_TOKEN }}
+        path: capacitorGT-ios
+
+    - name: Copy capacitorGT-ios build artifacts
+      run: |
+        mkdir -p capacitorGT-ios/Capacitor/Capacitor
+        mkdir -p capacitorGT-ios/CapacitorCordova/CapacitorCordova
+        mkdir -p capacitorGT-ios/scripts
+        cp -r ios/Capacitor/Capacitor/* capacitorGT-ios/Capacitor/Capacitor/
+        cp -r ios/CapacitorCordova/CapacitorCordova/* capacitorGT-ios/CapacitorCordova/CapacitorCordova/
+        cp ios/scripts/pods_helpers.rb capacitorGT-ios/scripts/
+        cp ios/Capacitor.podspec capacitorGT-ios/
+        cp ios/CapacitorCordova.podspec capacitorGT-ios/
+        cp ios/LICENSE capacitorGT-ios/
+        cp ios/package.json capacitorGT-ios/
+    - name: Commit and push capacitorGT-ios build artifacts
+      run: |
+        cd capacitorGT-ios
+        git config --global user.email "mariann4you@gmail.com"  # Set your email
+        git config --global user.name "rencsikmarian"  # Set your username
+        git add .
+        if [ -n "$(git status --porcelain)" ]; then
+          git commit -m "Upload capacitorGT-ios build artifacts"
+          git push
+        else
+          echo "No changes to commit for capacitorGT-ios"
+        fi
+    - name: Checkout target repository for capacitorGT-cli
+      uses: actions/checkout@v2
+      with:
+        repository: rencsikmarian/capacitorGT-cli  # Replace with your target repository for cli
+        token: ${{ secrets.CAPACITORGT_TOKEN }}
+        path: capacitorGT-cli
+
+    - name: Copy capacitorGT-cli build artifacts
+      run: |
+        mkdir -p capacitorGT-cli/assets
+        mkdir -p capacitorGT-cli/bin
+        mkdir -p capacitorGT-cli/dist
+        cp -r cli/assets/* capacitorGT-cli/assets/
+        cp -r cli/bin/* capacitorGT-cli/bin/
+        cp -r cli/dist/* capacitorGT-cli/dist/
+        cp cli/LICENSE capacitorGT-cli/
+        cp cli/README.md capacitorGT-cli/
+        cp cli/package.json capacitorGT-cli/
+    - name: Commit and push capacitorGT-cli build artifacts
+      run: |
+        cd capacitorGT-cli
+        git config --global user.email "mariann4you@gmail.com"  # Set your email
+        git config --global user.name "rencsikmarian"  # Set your username
+        git add .
+        if [ -n "$(git status --porcelain)" ]; then
+          git commit -m "Upload capacitorGT-cli build artifacts"
+          git push
+        else
+          echo "No changes to commit for capacitorGT-cli"
+        fi
